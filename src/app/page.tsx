@@ -1,95 +1,68 @@
-import Image from "next/image";
+'use client'
+import { useState } from "react";
 import styles from "./page.module.css";
+import {Button, Col, Container, Row, Form, NavLink} from "react-bootstrap";
+import { getWeatherForecastByCityName } from "@/services/home_page_requests";
+import { useCurrenForecast } from "@/stores/current-forecast-store";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [city, setCity] = useState("");
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
+  const { currentForecast, setCurrenForecast } = useCurrenForecast();
+
+  const onFormSubmit = async (e) => {
+    e.preventDefault();
+    await fetchWeather();
+  }
+
+  const fetchWeather = async () => {
+    if (!city) return;
+
+    const forecast = await getWeatherForecastByCityName(city);
+    if (forecast) {
+      setCurrenForecast(forecast)
+    }
+  };
+
+  return (
+      <main className={styles.main}>
+        <Container>
+          <Row className="justify-content-center">
+            <Col xs={12} md={8} lg={6}>
+              <h1 className="text-danger text-center fw-bold mb-4">Weather Forecast</h1>
+              <Form className="bg-light p-4 rounded shadow" onSubmit={onFormSubmit}>
+                <Row>
+                  <Col xs={8} md={9}>
+                    <Form.Control
+
+                      type="text"
+                      placeholder="Enter city name..."
+                      required
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="mb-3"
+                    />
+                  </Col>
+                  <Col>
+                    <Button variant="primary" size={"sm"} type="submit">
+                      Search
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+
+              {currentForecast && (
+                <div className="mt-5 bg-white p-4 rounded shadow">
+                  <h2 className="text-center text-success">{currentForecast.name}</h2>
+                  <p className="text-center">{currentForecast.weather[0].description}</p>
+                  <h3 className="text-center text-primary">{currentForecast.main.temp}°C</h3>
+                  <Link className='link-info' href={"/forecast"}>Weather forecast in {currentForecast.name}</Link>
+                </div>
+              )}
+            </Col>
+          </Row>
+        </Container>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
   );
 }
