@@ -1,22 +1,24 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import styles from "./page.module.scss";
 import {Alert, Button, Col, Container, Form, Row, Spinner} from "react-bootstrap";
-import {getWeatherForecastByCityName} from "@/services/home_page_requests";
-import {useCurrenForecast} from "@/stores/current-forecast-store";
+import {getWeatherByCityName} from "@/services/home_page_requests";
+import {useCurrenWeather} from "@/stores/current-weather-store";
 import Link from "next/link";
 import {Nullable} from "@/utils/nullable";
 import {useFavoriteForecasts} from "@/stores/favorites-forecast-store";
-import {WeatherItem} from "@/lib/types"; // Assuming you have this store
+import {WeatherItem} from "@/lib/types";
+import {useRouter} from "next/navigation";
 
 export default function Home() {
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Nullable<string>>(null);
 
-  const {currentForecast, setCurrenForecast} = useCurrenForecast();
-  const {addFavorite, favoritesList} = useFavoriteForecasts(); // Access favorites and addFavorite
+  const {currentForecast, setCurrenForecast} = useCurrenWeather();
+  const {addFavorite, favoritesList} = useFavoriteForecasts();
+  const router = useRouter();
 
   const onFormSubmit = async (e) => {
     e.preventDefault();
@@ -25,11 +27,11 @@ export default function Home() {
 
   const fetchWeather = async () => {
     setIsLoading(true);
-    setError(null); // Reset error state on new search
+    setError(null);
     if (!city) return;
 
     try {
-      const forecast = await getWeatherForecastByCityName(city);
+      const forecast = await getWeatherByCityName(city);
       if (forecast) {
         setCurrenForecast(forecast);
         setIsLoading(false);
@@ -53,6 +55,14 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const storedFavorites = localStorage.getItem("favorites");
+    if (storedFavorites) {
+      const parsedFavorites = JSON.parse(storedFavorites);
+      parsedFavorites.forEach((forecast: WeatherItem) => addFavorite(forecast));
+    }
+  }, [addFavorite]);
+
   return (
     <main className={styles.main}>
       <Container>
@@ -74,7 +84,6 @@ export default function Home() {
                 <Col>
                   <Button
                     className={styles.searchButton}
-                    size={"sm"}
                     type="submit"
                     disabled={isLoading}
                   >
@@ -100,18 +109,16 @@ export default function Home() {
                 <h2 className="text-center text-success">{currentForecast.name}</h2>
                 <p className="text-center">{currentForecast.weather[0].description}</p>
                 <h3 className={`${styles.weatherTemp} text-center`}>{currentForecast.main.temp}°C</h3>
-                <Link className={styles.weatherLink} href={"/forecast"}>
+                <Link className={styles.weatherLink} href={`/forecast/${currentForecast.name}`}>
                   Weather forecast in {currentForecast.name}
                 </Link>
 
-                {/* Add to favorites button */}
                 <Button
                   className={`${styles.searchButton} mt-3`}
                   size={"sm"}
-                  onClick={handleAddFavorite}
-                  disabled={isFavorite(currentForecast)}
+                  onClick={isFavorite(currentForecast) ? () => router.push("/favorites") : handleAddFavorite}
                 >
-                  {isFavorite(currentForecast) ? "Already in Favorites" : "Add to Favorites"}
+                  {isFavorite(currentForecast) ? "Go to favorites" : "Add to Favorites"}
                 </Button>
               </div>
             ) : null}
