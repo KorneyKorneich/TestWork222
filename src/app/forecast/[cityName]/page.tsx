@@ -59,8 +59,8 @@ export default function ForecastDetails({params}: { params: Promise<{ cityName: 
   return (
     <Container className={styles.page}>
       <div className={styles.buttonContainer}>
-        <Button variant="primary" className="mt-3 align-self-start" onClick={() => router.push("/")}>
-          ← Back to Home
+        <Button variant="primary" className="mt-3 align-self-start" onClick={() => router.back()}>
+          ← Back
         </Button>
       </div>
 
