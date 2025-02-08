@@ -1,95 +1,123 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import {useState} from "react";
+import styles from "./page.module.scss";
+import {Alert, Button, Col, Container, Form, Row, Spinner} from "react-bootstrap";
+import {getWeatherForecastByCityName} from "@/services/home_page_requests";
+import {useCurrenForecast} from "@/stores/current-forecast-store";
+import Link from "next/link";
+import {Nullable} from "@/utils/nullable";
+import {useFavoriteForecasts} from "@/stores/favorites-forecast-store";
+import {WeatherItem} from "@/lib/types"; // Assuming you have this store
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [city, setCity] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Nullable<string>>(null);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const {currentForecast, setCurrenForecast} = useCurrenForecast();
+  const {addFavorite, favoritesList} = useFavoriteForecasts(); // Access favorites and addFavorite
+
+  const onFormSubmit = async (e) => {
+    e.preventDefault();
+    await fetchWeather();
+  };
+
+  const fetchWeather = async () => {
+    setIsLoading(true);
+    setError(null); // Reset error state on new search
+    if (!city) return;
+
+    try {
+      const forecast = await getWeatherForecastByCityName(city);
+      if (forecast) {
+        setCurrenForecast(forecast);
+        setIsLoading(false);
+      } else {
+        setError("No data found for the city. Please try another.");
+        setIsLoading(false);
+      }
+    } catch (e) {
+      setError("Something went wrong. Please try again later.");
+      setIsLoading(false);
+    }
+  };
+
+  const isFavorite = (forecast: WeatherItem) => {
+    return favoritesList.some((favorite: WeatherItem) => favorite.name === forecast.name);
+  };
+
+  const handleAddFavorite = () => {
+    if (currentForecast && !isFavorite(currentForecast)) {
+      addFavorite(currentForecast);
+    }
+  };
+
+  return (
+    <main className={styles.main}>
+      <Container>
+        <Row className="justify-content-center">
+          <Col xs={12} md={8} lg={6}>
+            <h1 className={`${styles.heading} text-center fw-bold mb-4`}>Weather Forecast</h1>
+            <Form className={`${styles.searchForm}`} onSubmit={onFormSubmit}>
+              <Row>
+                <Col xs={8} md={9}>
+                  <Form.Control
+                    className={styles.inputField}
+                    type="text"
+                    placeholder="Enter city name..."
+                    required
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                  />
+                </Col>
+                <Col>
+                  <Button
+                    className={styles.searchButton}
+                    size={"sm"}
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Searching..." : "Search"}
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+
+            {isLoading ? (
+              <div className={styles.spinnerContainer}>
+                <Spinner animation="border" variant="primary"/>
+                <p>Loading forecast data...</p>
+              </div>
+            ) : error !== null ? (
+              <Container className={styles.page}>
+                <Alert variant="danger" className={styles.errorAlert}>
+                  {error}
+                </Alert>
+              </Container>
+            ) : currentForecast ? (
+              <div className={styles.weatherBlock}>
+                <h2 className="text-center text-success">{currentForecast.name}</h2>
+                <p className="text-center">{currentForecast.weather[0].description}</p>
+                <h3 className={`${styles.weatherTemp} text-center`}>{currentForecast.main.temp}°C</h3>
+                <Link className={styles.weatherLink} href={"/forecast"}>
+                  Weather forecast in {currentForecast.name}
+                </Link>
+
+                {/* Add to favorites button */}
+                <Button
+                  className={`${styles.searchButton} mt-3`}
+                  size={"sm"}
+                  onClick={handleAddFavorite}
+                  disabled={isFavorite(currentForecast)}
+                >
+                  {isFavorite(currentForecast) ? "Already in Favorites" : "Add to Favorites"}
+                </Button>
+              </div>
+            ) : null}
+          </Col>
+        </Row>
+      </Container>
+    </main>
   );
 }
