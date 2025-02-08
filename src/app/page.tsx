@@ -69,6 +69,8 @@ export default function Home() {
         <Row className="justify-content-center">
           <Col xs={12} md={8} lg={6}>
             <h1 className={`${styles.heading} text-center fw-bold mb-4`}>Weather Forecast</h1>
+            <Button variant="secondary" className={'mb-3'} onClick={() => router.push("/favorites")}>To
+              favorite</Button>
             <Form className={`${styles.searchForm}`} onSubmit={onFormSubmit}>
               <Row>
                 <Col xs={8} md={9}>
