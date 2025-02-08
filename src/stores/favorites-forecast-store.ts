@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { WeatherItem } from "@/lib/types";
+import {create} from "zustand";
+import {WeatherItem} from "@/lib/types";
 
 interface FavoriteForecastsStore {
   favoritesList: WeatherItem[];
@@ -7,25 +7,22 @@ interface FavoriteForecastsStore {
   removeFavorite: (city: string) => void;
 }
 
-export const useFavoriteForecasts = create<FavoriteForecastsStore>((set) => {
-  const storedFavorites = typeof window !== "undefined" ? localStorage.getItem("favorites") : null;
-  const initialFavorites: WeatherItem[] = storedFavorites ? JSON.parse(storedFavorites) : [];
-
-  return {
-    favoritesList: initialFavorites,
-
-    addFavorite: (city) =>
-      set((state) => {
+export const useFavoriteForecasts = create<FavoriteForecastsStore>((set) => ({
+  favoritesList: [],
+  addFavorite: (city) =>
+    set((state) => {
+      const isAlreadyFavorite = state.favoritesList.some((favorite) => favorite.name === city.name);
+      if (!isAlreadyFavorite) {
         const updatedFavorites = [...state.favoritesList, city];
         localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-        return { favoritesList: updatedFavorites };
-      }),
-
-    removeFavorite: (city) =>
-      set((state) => {
-        const updatedFavorites = state.favoritesList.filter((fav) => fav.name !== city);
-        localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
-        return { favoritesList: updatedFavorites };
-      }),
-  };
-});
+        return {favoritesList: updatedFavorites};
+      }
+      return state;
+    }),
+  removeFavorite: (city) =>
+    set((state) => {
+      const updatedFavorites = state.favoritesList.filter((fav) => fav.name !== city);
+      localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+      return {favoritesList: updatedFavorites};
+    }),
+}));
