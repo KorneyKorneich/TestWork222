@@ -1,5 +1,6 @@
 import axios from "axios";
 import {WeatherResponse} from "@/lib/weatherAPI";
+
 const API_KEY = '75b2078079ca880ddc35e8243107a5f7'
 
 export const getWeatherForecastByCityName = async (city: string) => {
@@ -17,7 +18,7 @@ export const getWeatherForecastByCityName = async (city: string) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching weather data:", error);
+    throw error;
   }
 
 }

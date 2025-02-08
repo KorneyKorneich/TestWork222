@@ -1,0 +1,113 @@
+/* Main container styling */
+.main {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Search form */
+.searchForm {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading */
+.heading {
+  color: #d9534f;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Input field */
+.inputField {
+  border-radius: 5px;
+  padding: 1rem;
+  font-size: 1rem;
+  width: 100%;
+  border: 1px solid #ced4da;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s;
+}
+
+.inputField:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Button */
+.searchButton {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.searchButton:hover {
+  background-color: #0056b3;
+}
+
+.searchButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Weather Block */
+.weatherBlock {
+  margin-top: 2rem;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.weatherBlock h2 {
+  color: #28a745;
+  font-size: 2rem;
+}
+
+.weatherBlock p {
+  color: #6c757d;
+  font-size: 1.2rem;
+}
+
+.weatherTemp {
+  font-size: 3rem;
+  color: #007bff;
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.weatherLink {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.weatherLink:hover {
+  text-decoration: underline;
+}
+
+/* Spinner and error alerts */
+.spinnerContainer {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.errorAlert {
+  margin-top: 2rem;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
